@@ -5,7 +5,10 @@ from sklearn.metrics import accuracy_score
 
 def main():
 	base_dir = os.path.dirname(__file__)
-	predictions_path = os.path.join(base_dir, "..", "predictions.csv")
+	# MARIO INI - Cambiar a houses.csv
+	# predictions_path = os.path.join(base_dir, "..", "predictions.csv")
+	predictions_path = os.path.join(base_dir, "..", "houses.csv")
+	# MARIO FIN
 	validation_path = os.path.join(base_dir, "..", "prediction", "validation_split.csv")
 
 	validation = pd.read_csv(validation_path)

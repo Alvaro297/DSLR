@@ -1,86 +1,96 @@
 
-# DSLR — Análisis y modelos (Visualización y ML)
+# DSLR — Clasificación de casas de Hogwarts
 
-Proyecto de ejemplo para análisis de datos, visualización y modelos de aprendizaje automático.
-Contiene scripts para explorar datasets, visualizar relaciones entre características, entrenar modelos
-mediante descenso de gradiente y realizar predicciones con modelos lineales y de regresión logística.
+Proyecto de clasificación mediante regresión logística multiclase (one-vs-all).
+Analiza un dataset de estudiantes de Hogwarts, visualiza relaciones entre características,
+entrena un modelo con gradient descent y predice la casa de cada estudiante.
 
 ## Estructura del repositorio
 
-- `describe.py` — funciones auxiliares para describir datasets.
-- `gradient_descent.py` — implementación de descenso por gradiente para regresión lineal.
-- `histogram.py` — generación de histogramas para variables del dataset.
-- `logreg_predict.py` — predicción con un modelo de regresión logística (inferencia).
-- `main.py` — script principal / ejemplo de ejecución (puede orquestar otros módulos).
-- `pair_plot.py` — gráficos de pares para explorar correlaciones entre variables.
-- `scatter_plot.py` — gráficos de dispersión personalizados.
-- `datasets/` — carpeta con los datasets de entrenamiento y test (`dataset_train.csv`, `dataset_test.csv`).
-- `prediction/accuracity.py` — métricas de evaluación (precisión, exactitud, etc.).
-- `validation/validation.py` — rutinas de validación y evaluación de modelos.
+| Archivo / Directorio | Descripción |
+|---|---|
+| `logreg_train.py` | Entrena el modelo de regresión logística y genera `model.json` |
+| `logreg_predict.py` | Predice las casas usando el modelo entrenado, genera `houses.csv` |
+| `main.py` | Pipeline completo: describe, histogramas, scatter plots, pair plot y entrenamiento |
+| `describe.py` | Estadísticas descriptivas del dataset (count, mean, std, min, max, percentiles) |
+| `histogram.py` | Histogramas por casa con test de Kruskal-Wallis para homogeneidad |
+| `scatter_plot.py` | Gráficos de dispersión para correlaciones de Pearson (|r| >= 0.85) |
+| `pair_plot.py` | Pair plots con eliminación de features correlacionadas (|r| >= 0.8) |
+| `gradient_descent.py` | Implementación de gradient descent para regresión logística multiclase |
+| `datasets/` | Datasets de entrenamiento y test |
+| `prediction/accuracity.py` | Divide el dataset en train/validation |
+| `validation/validation.py` | Calcula la accuracy del modelo |
 
 ## Requisitos
 
 - Python 3.8 o superior
-- Paquetes recomendados: `numpy`, `pandas`, `matplotlib`, `seaborn`, `scikit-learn`
+- Dependencias: `numpy`, `pandas`, `matplotlib`, `seaborn`, `scikit-learn`, `scipy`
 
-Instalación rápida (recomendado dentro de un virtualenv o entorno conda):
+Instalación:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate    # Linux / macOS
-.venv\Scripts\activate     # Windows PowerShell
-pip install numpy pandas matplotlib seaborn scikit-learn
+python -m venv venv
+venv\Scripts\activate        # Windows PowerShell
+source venv/bin/activate     # Linux / macOS
+pip install numpy pandas matplotlib seaborn scikit-learn scipy
 ```
 
 ## Uso
 
-Ejemplos de ejecución desde la raíz del proyecto `DSLR`:
+Todos los comandos se ejecutan desde la raíz del proyecto `DSLR`.
 
-- Ejecutar el script principal de ejemplo:
-
-```bash
-python main.py
-```
-
-- Generar un pair-plot para explorar el dataset:
+### 1. Explorar el dataset (visualización completa)
 
 ```bash
-python pair_plot.py
+python main.py datasets/dataset_train.csv
 ```
 
-- Entrenar o probar la implementación de descenso por gradiente:
+Genera estadísticas descriptivas, histogramas, scatter plots de correlaciones y pair plots.
+
+### 2. Entrenar el modelo
 
 ```bash
-python gradient_descent.py
+python logreg_train.py datasets/dataset_train.csv
 ```
 
-- Ejecutar la predicción con el modelo de regresión logística:
+Genera `model.json` con los pesos, bias, medias y desviaciones estándar.
+
+### 3. Predecir casas
 
 ```bash
-python logreg_predict.py --input datasets/dataset_test.csv
+python logreg_predict.py datasets/dataset_test.csv
 ```
 
-Cada script tiene comentarios al inicio explicando parámetros y opciones disponibles.
+Genera `houses.csv` con las predicciones. Opciones:
+- `-v` / `--verbose`: muestra detalles de las predicciones
+- `--model <ruta>`: usar un modelo alternativo (default: `model.json`)
+
+### 4. Validar accuracy
+
+```bash
+python prediction/accuracity.py
+python validation/validation.py
+```
+
+### Scripts individuales
+
+```bash
+python describe.py datasets/dataset_train.csv
+python histogram.py          # (se usa desde main.py)
+python scatter_plot.py       # (se usa desde main.py)
+python pair_plot.py          # (se usa desde main.py)
+```
+
+## Archivos generados
+
+| Archivo | Descripción | Generado por |
+|---|---|---|
+| `model.json` | Pesos, bias, estadísticas del modelo | `logreg_train.py` |
+| `houses.csv` | Predicciones de casas | `logreg_predict.py` |
+| `weights.csv` | Pesos del modelo en CSV | `logreg_predict.py` |
 
 ## Datos
 
-Los datasets de ejemplo están en la carpeta `datasets/`. Revisa `dataset_train.csv` y `dataset_test.csv`.
-Si quieres usar tus propios datos, coloca el archivo CSV en `datasets/` y adapta los nombres de columnas
-en los scripts según sea necesario.
-
-## Contribuciones
-
-Si quieres mejorar este repositorio:
-
-1. Crea una rama nueva `feature/tu-cambio`.
-2. Añade tests o ejemplos de uso si modificas la lógica.
-3. Abre un pull request explicando los cambios.
-
-## Licencia
-
-Este proyecto no incluye una licencia explícita. Añade una licencia (ej. MIT) si planeas compartirlo públicamente.
-
-## Contacto
-
-Para dudas o mejoras, puedes abrir un issue en el repositorio o contactarme directamente.
+Los datasets están en `datasets/`. Se espera una columna `Hogwarts House` con valores:
+`Gryffindor`, `Slytherin`, `Ravenclaw`, `Hufflepuff`.
 

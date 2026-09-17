@@ -4,6 +4,26 @@ from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
 def my_pair_plot(datasets: DataFrame, save_path: str = None, sample_n: int = 500, show: bool = True) -> DataFrame:
+	# MARIO INI - Validaciones
+	if datasets is None or datasets.empty:
+		print(f"Error: El DataFrame está vacío o es None")
+		return datasets
+	
+	if len(datasets) == 0:
+		print(f"Error: El DataFrame no tiene filas")
+		return datasets
+	
+	if "Hogwarts House" not in datasets.columns:
+		print(f"Error: El DataFrame debe contener la columna 'Hogwarts House'")
+		return datasets
+	
+	# Verificar si hay columnas numéricas
+	numeric_cols = datasets.select_dtypes(include='number').columns.tolist()
+	if len(numeric_cols) == 0:
+		print(f"Error: No se encontraron columnas numéricas en el DataFrame")
+		return datasets
+	# MARIO FIN
+	
 	colors = ['blue', 'green', 'red', 'orange']
 	data = datasets
 	if sample_n and len(datasets) > sample_n:

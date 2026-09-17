@@ -1,0 +1,28 @@
+Mario/
+
+# Bytecode / cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entorno virtual
+venv/
+
+# Modelo entrenado
+model.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Gráficos / outputs generados
+*.png
+*.jpg
+*.svg

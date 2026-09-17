@@ -18,11 +18,15 @@ def my_normalization(data: DataFrame, df_describe: DataFrame):
 				fill_dict[col] = 0.0
 	data_imputed = data_numeric.fillna(fill_dict)
 	data_normalized = data_imputed.copy()
-	print(df_describe.columns)
-	print("El data frame")
-	print(data_normalized.columns)
+	# MARIO INI - Remover prints de debug
+	# print(df_describe.columns)
+	# print("El data frame")
+	# print(data_normalized.columns)
+	# MARIO FIN
 	for columns in data_normalized.columns:
-		print(columns)
+		# MARIO INI - Remover print de debug
+		# print(columns)
+		# MARIO FIN
 		if columns == "Index":
 			continue
 		try:
@@ -43,9 +47,44 @@ def create_labels(df_all: DataFrame):
 	return labels
 
 def my_gradient_descent(data: DataFrame, df_describe: DataFrame, df_all: DataFrame):
+	# MARIO INI - Validaciones
+	if data is None or data.empty:
+		print(f"Error: El DataFrame de datos está vacío o es None")
+		return
+	
+	if df_describe is None or df_describe.empty:
+		print(f"Error: El DataFrame de descripciones está vacío o es None")
+		return
+	
+	if df_all is None or df_all.empty:
+		print(f"Error: El DataFrame completo está vacío o es None")
+		return
+	
+	if "Hogwarts House" not in df_all.columns:
+		print(f"Error: El DataFrame completo debe contener la columna 'Hogwarts House'")
+		return
+	
+	if len(data) == 0:
+		print(f"Error: No hay filas en el DataFrame de datos")
+		return
+	
+	MIN_ROWS = 10
+	if len(data) < MIN_ROWS:
+		print(f"Error: Se necesitan al menos {MIN_ROWS} filas para entrenar, pero solo hay {len(data)}")
+		return
+	
+	# Verificar si hay columnas numéricas
+	if len(data.columns) == 0:
+		print(f"Error: No hay columnas en el DataFrame de datos")
+		return
+	# MARIO FIN
+	
 	data_normalized = my_normalization(data, df_describe)
 	lr = 0.05
-	bias = 1.0
+	# MARIO INI - Bias por cada clase (one-vs-all)
+	# bias = 1.0
+	bias = pd.Series(0.0, index=['Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff'])
+	# MARIO FIN
 	labels = create_labels(df_all)
 	labels = labels.reindex(index=data_normalized.index, fill_value=0)
 	list_weights = pd.DataFrame(
@@ -59,7 +98,10 @@ def my_gradient_descent(data: DataFrame, df_describe: DataFrame, df_all: DataFra
 		pred = expit(z)
 		error = pred - labels
 		dw = data_normalized.T.dot(error) / len(data_normalized)
-		db = float(error.mean().mean())
+		# MARIO INI - Bias por cada clase
+		# db = float(error.mean().mean())
+		db = error.mean()
+		# MARIO FIN
 		list_weights -= lr * dw
 		bias -= lr * db
 
@@ -76,7 +118,10 @@ def my_gradient_descent(data: DataFrame, df_describe: DataFrame, df_all: DataFra
 
 	json_data = {
 		"weights": weights_serializable,
-		"bias": float(bias),
+		# MARIO INI - Bias por cada clase (serializar como dict)
+		# "bias": float(bias),
+		"bias": bias.to_dict(),
+		# MARIO FIN
 		"mse_error": mse_error,
 		"std": std_serializable,
 		"columns": data_normalized.columns.to_list()

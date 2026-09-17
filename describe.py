@@ -3,6 +3,9 @@
 import pandas as pd
 from pandas import DataFrame
 import math
+import argparse  # MARIO INI
+import sys
+import os  # MARIO FIN
 
 def my_percent(dataset: DataFrame, column: str, percent: int):
 	values = []
@@ -107,3 +110,67 @@ def describe_dataset(dataset: DataFrame) -> DataFrame:
 	df_result = pd.DataFrame(result)
 	print(df_result)
 	return df_result
+
+# MARIO INI - Validaciones de manejo de errores
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description="Describe dataset statistics")
+	parser.add_argument("dataset", type=str, help="Ruta al archivo CSV")
+	args = parser.parse_args()
+	
+	# MARIO INI - Validaciones
+	dataset_path = args.dataset
+	
+	# Verificar si el archivo existe
+	if not os.path.exists(dataset_path):
+		print(f"Error: El archivo '{dataset_path}' no existe")
+		sys.exit(1)
+	
+	# Verificar si es un archivo (no directorio)
+	if not os.path.isfile(dataset_path):
+		print(f"Error: '{dataset_path}' no es un archivo")
+		sys.exit(1)
+	
+	# Verificar si el archivo está vacío
+	if os.path.getsize(dataset_path) == 0:
+		print(f"Error: El archivo '{dataset_path}' está vacío")
+		sys.exit(1)
+	
+	# Verificar extensión .csv
+	if not dataset_path.lower().endswith('.csv'):
+		print(f"Error: El archivo debe tener extensión .csv")
+		sys.exit(1)
+	# MARIO FIN
+	
+	try:
+		dataset = pd.read_csv(dataset_path)
+		
+		# MARIO INI - Validaciones del DataFrame
+		if dataset.empty:
+			print(f"Error: El dataset está vacío")
+			sys.exit(1)
+		
+		if len(dataset) == 0:
+			print(f"Error: El dataset no tiene filas")
+			sys.exit(1)
+		
+		# Verificar si hay columnas numéricas
+		numeric_cols = dataset.select_dtypes(include='number').columns.tolist()
+		if len(numeric_cols) == 0:
+			print(f"Error: No se encontraron columnas numéricas en el dataset")
+			sys.exit(1)
+		# MARIO FIN
+		
+		describe_dataset(dataset)
+	except pd.errors.EmptyDataError:
+		print(f"Error: El archivo CSV está vacío o no tiene datos válidos")
+		sys.exit(1)
+	except pd.errors.ParserError:
+		print(f"Error: El archivo CSV tiene un formato inválido")
+		sys.exit(1)
+	except FileNotFoundError:
+		print(f"Error: No se encontro el archivo {dataset_path}")
+		sys.exit(1)
+	except Exception as e:
+		print(f"Error: {e}")
+		sys.exit(1)
+# MARIO FIN
