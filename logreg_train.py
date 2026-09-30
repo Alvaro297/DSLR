@@ -12,10 +12,17 @@ from gradient_descent import my_gradient_descent
 def main():
 	parser = argparse.ArgumentParser(description="Entrena el modelo de regresion logistica")
 	parser.add_argument("dataset", type=str, help="Ruta al archivo CSV de entrenamiento")
+	parser.add_argument(
+		"-a", "--algorithm",
+		type=str,
+		default="batch",
+		choices=["batch", "sgd", "mini_batch", "adam"],
+		help="Algoritmo de optimización: batch (default), sgd, mini_batch, adam"
+	)
 	args = parser.parse_args()
 	
-	# MARIO INI - Validaciones
 	dataset_path = args.dataset
+	algorithm = args.algorithm
 	
 	# Verificar si el archivo existe
 	if not os.path.exists(dataset_path):
@@ -91,7 +98,7 @@ def main():
 		
 		# Entrenar modelo
 		print("\nEntrenando modelo con gradient descent...")
-		my_gradient_descent(data, df_describe, dataset_pandas)
+		my_gradient_descent(data, df_describe, dataset_pandas, algorithm)
 		print("\nEntrenamiento completado. Modelo guardado en model.json")
 		
 	except pd.errors.EmptyDataError:

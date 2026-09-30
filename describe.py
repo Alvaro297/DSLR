@@ -88,6 +88,86 @@ def my_mean(dataset: DataFrame, column: str):
 	mean = total / count
 	return mean
 
+def my_variance(dataset: DataFrame, column: str):
+	mean = my_mean(dataset, column)
+	if math.isnan(mean):
+		return float('nan')
+	var_sum = 0
+	count: int = 0
+	for index, row in dataset.iterrows():
+		val = row[column]
+		if pd.notna(val):
+			var_sum += (val - mean)**2
+			count += 1
+	if count <= 1:
+		return float('nan')
+	return var_sum / (count - 1)
+
+def my_mode(dataset: DataFrame, column: str):
+	counts = {}
+	for index, row in dataset.iterrows():
+		val = row[column]
+		if pd.notna(val):
+			rounded_val = round(val, 6)
+			counts[rounded_val] = counts.get(rounded_val, 0) + 1
+	if len(counts) == 0:
+		return float('nan')
+	max_count = max(counts.values())
+	modes = [k for k, v in counts.items() if v == max_count]
+	if len(modes) == 1:
+		return float(modes[0])
+	return min(modes)
+
+def my_range(dataset: DataFrame, column: str):
+	min_val = my_min(dataset, column)
+	max_val = my_max(dataset, column)
+	if math.isnan(min_val) or math.isnan(max_val):
+		return float('nan')
+	return max_val - min_val
+
+def my_skewness(dataset: DataFrame, column: str):
+	mean = my_mean(dataset, column)
+	std = my_std(dataset, column)
+	if math.isnan(mean) or math.isnan(std) or std == 0:
+		return float('nan')
+	count: int = 0
+	skew_sum = 0
+	for index, row in dataset.iterrows():
+		val = row[column]
+		if pd.notna(val):
+			skew_sum += ((val - mean) / std) ** 3
+			count += 1
+	if count < 3:
+		return float('nan')
+	return skew_sum / count
+
+def my_kurtosis(dataset: DataFrame, column: str):
+	mean = my_mean(dataset, column)
+	std = my_std(dataset, column)
+	if math.isnan(mean) or math.isnan(std) or std == 0:
+		return float('nan')
+	count: int = 0
+	kurt_sum = 0
+	for index, row in dataset.iterrows():
+		val = row[column]
+		if pd.notna(val):
+			kurt_sum += ((val - mean) / std) ** 4
+			count += 1
+	if count < 4:
+		return float('nan')
+	return (kurt_sum / count) - 3
+
+def my_sum(dataset: DataFrame, column: str):
+	total = 0
+	count: int = 0
+	for index, row in dataset.iterrows():
+		val = row[column]
+		if pd.notna(val):
+			total += val
+			count += 1
+	if count == 0:
+		return float('nan')
+	return total
 
 def describe_dataset(dataset: DataFrame) -> DataFrame:
 	result = {}
@@ -101,7 +181,13 @@ def describe_dataset(dataset: DataFrame) -> DataFrame:
 			'25%': my_percent(dataset, column=col, percent=25),
 			'50%':  my_percent(dataset, column=col, percent=50),
 			'75%':  my_percent(dataset, column=col, percent=75),
-			'Max': my_max(dataset, column=col)
+			'Max': my_max(dataset, column=col),
+			'Mode': my_mode(dataset, column=col),
+			'Variance': my_variance(dataset, column=col),
+			'Range': my_range(dataset, column=col),
+			'Skewness': my_skewness(dataset, column=col),
+			'Kurtosis': my_kurtosis(dataset, column=col),
+			'Sum': my_sum(dataset, column=col)
 		}
 	df_result = pd.DataFrame(result)
 	print(df_result)

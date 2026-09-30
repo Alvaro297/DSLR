@@ -18,7 +18,6 @@ def main():
 		action="store_true",
 		help="activar salida detallada"
 	)
-	# MARIO INI - Cambio de --csv a argumento posicional para consistencia
 	parser.add_argument(
 		"dataset",
 		type=str,
@@ -32,7 +31,13 @@ def main():
 		required=False,
 		help="Ruta al archivo CSV (deprecated, usar argumento posicional)"
 	)
-	# MARIO FIN
+	parser.add_argument(
+		"-a", "--algorithm",
+		type=str,
+		default="batch",
+		choices=["batch", "sgd", "mini_batch", "adam"],
+		help="Algoritmo de optimización: batch (default), sgd, mini_batch, adam"
+	)
 	args = parser.parse_args()
 
 	if args.verbose:
@@ -116,7 +121,7 @@ def main():
 	if "Index" in data.columns:
 		data = data.drop(columns=["Index"])
 	# MARIO FIN
-	my_gradient_descent(data, df_describe, dataset_pandas)
+	my_gradient_descent(data, df_describe, dataset_pandas, args.algorithm)
 
 if __name__ == "__main__":
 	main()

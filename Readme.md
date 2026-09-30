@@ -12,11 +12,11 @@ entrena un modelo con gradient descent y predice la casa de cada estudiante.
 | `logreg_train.py` | Entrena el modelo de regresión logística y genera `model.json` |
 | `logreg_predict.py` | Predice las casas usando el modelo entrenado, genera `houses.csv` |
 | `main.py` | Pipeline completo: describe, histogramas, scatter plots, pair plot y entrenamiento |
-| `describe.py` | Estadísticas descriptivas del dataset (count, mean, std, min, max, percentiles) |
+| `describe.py` | Estadísticas descriptivas del dataset (count, mean, std, min, max, percentiles, mode, variance, range, skewness, kurtosis, sum) |
 | `histogram.py` | Histogramas por casa con test de Kruskal-Wallis para homogeneidad |
 | `scatter_plot.py` | Gráficos de dispersión para correlaciones de Pearson (|r| >= 0.85) |
 | `pair_plot.py` | Pair plots con eliminación de features correlacionadas (|r| >= 0.8) |
-| `gradient_descent.py` | Implementación de gradient descent para regresión logística multiclase |
+| `gradient_descent.py` | Implementación de gradient descent (batch, sgd, mini_batch, adam) |
 | `datasets/` | Datasets de entrenamiento y test |
 | `prediction/accuracity.py` | Divide el dataset en train/validation |
 | `validation/validation.py` | Calcula la accuracy del modelo |
@@ -55,6 +55,18 @@ python logreg_train.py datasets/dataset_train.csv
 
 Genera `model.json` con los pesos, bias, medias y desviaciones estándar.
 
+Opciones:
+- `-a` / `--algorithm`: algoritmo de optimización (default: `batch`)
+  - `batch`: Gradient Descent con todo el dataset
+  - `sgd`: Stochastic Gradient Descent (1 ejemplo por iteración)
+  - `mini_batch`: Mini-batch Gradient Descent (batch_size=32)
+  - `adam`: Adam optimizer (learning rate adaptativo)
+
+Ejemplo:
+```bash
+python logreg_train.py datasets/dataset_train.csv -a adam
+```
+
 ### 3. Predecir casas
 
 ```bash
@@ -76,9 +88,9 @@ python validation/validation.py
 
 ```bash
 python describe.py datasets/dataset_train.csv
-python histogram.py          # (se usa desde main.py)
-python scatter_plot.py       # (se usa desde main.py)
-python pair_plot.py          # (se usa desde main.py)
+python histogram.py datasets/dataset_train.csv
+python scatter_plot.py datasets/dataset_train.csv
+python pair_plot.py datasets/dataset_train.csv
 ```
 
 ## Archivos generados
@@ -93,4 +105,8 @@ python pair_plot.py          # (se usa desde main.py)
 
 Los datasets están en `datasets/`. Se espera una columna `Hogwarts House` con valores:
 `Gryffindor`, `Slytherin`, `Ravenclaw`, `Hufflepuff`.
+
+## Bonus
+
+Para más información sobre las características adicionales (campos estadísticos extendidos y algoritmos de optimización), consulta [README_bonus.md](README_bonus.md).
 
