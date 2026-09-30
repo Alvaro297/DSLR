@@ -81,10 +81,7 @@ def my_gradient_descent(data: DataFrame, df_describe: DataFrame, df_all: DataFra
 	
 	data_normalized = my_normalization(data, df_describe)
 	lr = 0.05
-	# MARIO INI - Bias por cada clase (one-vs-all)
-	# bias = 1.0
 	bias = pd.Series(0.0, index=['Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff'])
-	# MARIO FIN
 	labels = create_labels(df_all)
 	labels = labels.reindex(index=data_normalized.index, fill_value=0)
 	list_weights = pd.DataFrame(
@@ -93,15 +90,36 @@ def my_gradient_descent(data: DataFrame, df_describe: DataFrame, df_all: DataFra
 		columns=['Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff']
 		)
 	
-	for _ in range(5000):
+	prev_loss = float('inf')
+	patience = 100
+	patience_counter = 0
+	
+	for iteration in range(5000):
 		z = data_normalized.dot(list_weights) + bias
 		pred = expit(z)
 		error = pred - labels
+		
+		loss = float((error ** 2).mean().mean())
+		
+		if pd.isna(loss) or pd.isna(prev_loss):
+			print(f"Warning: Loss NaN detectado en iteración {iteration}")
+			break
+		
+		if prev_loss != float('inf') and loss > prev_loss * 1.1:
+			print(f"Warning: Divergencia detectada en iteración {iteration} (loss: {loss:.6f}, prev: {prev_loss:.6f})")
+			break
+		
+		if loss < prev_loss - 1e-7:
+			prev_loss = loss
+			patience_counter = 0
+		else:
+			patience_counter += 1
+		
+		if patience_counter >= patience:
+			break
+		
 		dw = data_normalized.T.dot(error) / len(data_normalized)
-		# MARIO INI - Bias por cada clase
-		# db = float(error.mean().mean())
 		db = error.mean()
-		# MARIO FIN
 		list_weights -= lr * dw
 		bias -= lr * db
 
@@ -111,10 +129,15 @@ def my_gradient_descent(data: DataFrame, df_describe: DataFrame, df_all: DataFra
 	mse_error = float((error ** 2).mean().mean())
 
 	weights_serializable = list_weights.astype(float).to_dict()
-	std_serializable = {
-		col: {"Mean": float(df_describe[col]["Mean"]), "Std": float(df_describe[col]["Std"])}
-		for col in data_normalized.columns
-	}
+	std_serializable = {}
+	for col in data_normalized.columns:
+		try:
+			std_serializable[col] = {
+				"Mean": float(df_describe[col]["Mean"]),
+				"Std": float(df_describe[col]["Std"])
+			}
+		except (KeyError, TypeError):
+			std_serializable[col] = {"Mean": 0.0, "Std": 1.0}
 
 	json_data = {
 		"weights": weights_serializable,

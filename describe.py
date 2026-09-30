@@ -18,42 +18,36 @@ def my_percent(dataset: DataFrame, column: str, percent: int):
 	values.sort()
 	n = len(values)
 	position = (percent / 100.0) * (n - 1)
-	if position == int(position):
-		return float(values[int(position)])
 	lower_index = int(position)
 	upper_index = lower_index + 1
+	if upper_index >= n:
+		return float(values[lower_index])
 	fraction = position - lower_index
 	lower_value = values[lower_index]
 	upper_value = values[upper_index]
 	return float(lower_value + fraction * (upper_value - lower_value))
 
 def my_max(dataset: DataFrame, column: str):
-	max = 0
-	flag: bool = False
+	max_val = None
 	for index, row in dataset.iterrows():
 		val = row[column]
-		if pd.notna(val) and flag is False:
-			max = val
-			flag = True
-		elif pd.notna(val) and max < val:
-			max = val
-	if flag is False:
+		if pd.notna(val):
+			if max_val is None or val > max_val:
+				max_val = val
+	if max_val is None:
 		return float('nan')
-	return max
+	return max_val
 
 def my_min(dataset: DataFrame, column: str):
-	min = 0
-	flag: bool = False
+	min_val = None
 	for index, row in dataset.iterrows():
 		val = row[column]
-		if pd.notna(val) and flag is False:
-			min = val
-			flag = True
-		elif pd.notna(val) and min > val:
-			min = val
-	if flag is False:
+		if pd.notna(val):
+			if min_val is None or val < min_val:
+				min_val = val
+	if min_val is None:
 		return float('nan')
-	return min
+	return min_val
 
 def my_std(dataset: DataFrame, column: str):
 	mean = my_mean(dataset, column)
@@ -66,6 +60,8 @@ def my_std(dataset: DataFrame, column: str):
 		if pd.notna(val):
 			std_sum += (val - mean)**2
 			count += 1
+	if count <= 1:
+		return float('nan')
 	std = math.sqrt(std_sum / (count - 1))
 	return std
 

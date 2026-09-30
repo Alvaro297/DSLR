@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.stats import pearsonr
 import pandas as pd
+import argparse
+import sys
+import os
 
 def my_scatter_plot(datasets: list):
 	# MARIO INI - Validaciones
@@ -41,15 +44,11 @@ def my_scatter_plot(datasets: list):
 			c1 = numeric_cols[i]
 			c2 = numeric_cols[j]
 			clean = full[[c1, c2]].dropna()
-			# MARIO INI - Validaciones
-			MIN_SAMPLES = 3
-			if len(clean) < MIN_SAMPLES:
+			if len(clean) < 3:
 				continue
-			# MARIO FIN
-			if len(clean) > 2:
-				corr, pval = pearsonr(clean[c1], clean[c2])
-				if abs(corr) >= threshold:
-					results.append({'Col1': c1, 'Col2': c2, 'r': round(corr, 4), 'p': round(pval, 6)})
+			corr, pval = pearsonr(clean[c1], clean[c2])
+			if abs(corr) >= threshold:
+				results.append({'Col1': c1, 'Col2': c2, 'r': round(corr, 4), 'p': round(pval, 6)})
 
 	if not results:
 		print(f"No se encontraron correlaciones con |r| >= {threshold}")
@@ -77,3 +76,54 @@ def my_scatter_plot(datasets: list):
 		plt.legend()
 		plt.grid(alpha=0.3)
 		plt.show()
+
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description="Scatter plot of Hogwarts features")
+	parser.add_argument("dataset", type=str, help="Ruta al archivo CSV")
+	args = parser.parse_args()
+	
+	dataset_path = args.dataset
+	
+	if not os.path.exists(dataset_path):
+		print(f"Error: El archivo '{dataset_path}' no existe")
+		sys.exit(1)
+	
+	if not os.path.isfile(dataset_path):
+		print(f"Error: '{dataset_path}' no es un archivo")
+		sys.exit(1)
+	
+	if os.path.getsize(dataset_path) == 0:
+		print(f"Error: El archivo '{dataset_path}' está vacío")
+		sys.exit(1)
+	
+	if not dataset_path.lower().endswith('.csv'):
+		print(f"Error: El archivo debe tener extensión .csv")
+		sys.exit(1)
+	
+	try:
+		dataset = pd.read_csv(dataset_path)
+		
+		if dataset.empty or len(dataset) == 0:
+			print(f"Error: El dataset está vacío")
+			sys.exit(1)
+		
+		if "Hogwarts House" not in dataset.columns:
+			print(f"Error: El dataset debe contener la columna 'Hogwarts House'")
+			sys.exit(1)
+		
+		df_ravenclaw = dataset[dataset['Hogwarts House'] == 'Ravenclaw']
+		df_slytherin = dataset[dataset['Hogwarts House'] == 'Slytherin']
+		df_gryffindor = dataset[dataset['Hogwarts House'] == 'Gryffindor']
+		df_hufflepuff = dataset[dataset['Hogwarts House'] == 'Hufflepuff']
+		datasets = [df_ravenclaw, df_slytherin, df_gryffindor, df_hufflepuff]
+		
+		my_scatter_plot(datasets)
+	except pd.errors.EmptyDataError:
+		print(f"Error: El archivo CSV está vacío o no tiene datos válidos")
+		sys.exit(1)
+	except pd.errors.ParserError:
+		print(f"Error: El archivo CSV tiene un formato inválido")
+		sys.exit(1)
+	except Exception as e:
+		print(f"Error: {e}")
+		sys.exit(1)

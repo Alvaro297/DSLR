@@ -130,6 +130,10 @@ def main():
 	if "bias" not in json_trained:
 		print(f"Error: El archivo del modelo no contiene 'bias'")
 		sys.exit(1)
+	
+	if "std" not in json_trained:
+		print(f"Error: El archivo del modelo no contiene 'std'")
+		sys.exit(1)
 	# MARIO FIN
 
 	weights: DataFrame = pd.DataFrame(json_trained["weights"])
